@@ -1,0 +1,2 @@
+# Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster
+This repository houses all processed data files and the complete analytical codebase utilized for my biology dissertation. It supports the findings presented in "Atlas of the chromatin landscape in the developing nervous system of Drosophila melanogaster" by providing full reproducibility and access to the underlying computational work.
