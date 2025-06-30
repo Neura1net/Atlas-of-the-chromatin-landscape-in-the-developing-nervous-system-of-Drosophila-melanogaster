@@ -1,0 +1,1076 @@
+---
+title: "FINAL_REAL_log2_FC_Analysis_Promoter"
+author: "Alexander Glahs"
+date: "11 Mai 2019"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries,  warning=FALSE, message=FALSE}
+
+source("https://bioconductor.org/biocLite.R")
+#biocLite("ggplot2")
+#biocLite("heatmap.2")
+#biocLite("heatmap")
+#biocLite("fpc")
+#biocLite("pvclust")
+#biocLite("gplots")
+#biocLite("rngtools")
+
+
+library(ggplot2)
+#library(heatmap)
+#library(fpc)
+library(pvclust)
+#library(heatmap.2)
+library(gplots)
+#library(rngtools)
+#library(NMF)
+
+
+
+library(EDASeq)
+library(fdrtool)
+library(kableExtra)
+library(knitr)
+library(tidyr)
+library(made4)
+library(corrplot)
+library(tidyverse)
+library(purrr)
+library(dplyr)
+library(EDASeq)
+library(fdrtool)
+library(kableExtra)
+library(knitr)
+library(tidyr)
+library(made4)
+library(corrplot)
+#library(reshape)
+library(reshape2)
+
+```
+
+```{r LoadData,  warning=FALSE}
+
+
+
+ID_table <-  read.table("C:/Users/Admin/Documents/Name_conversion_NM_FbGn_complete_unirot-gene_ID_master_list.csv",stringsAsFactors=F, sep= "\t",header=TRUE) 
+
+data <- read.table("C:/Users/Admin/Documents/RNA_seq_Ali/File S1 - VST counts.csv",stringsAsFactors=F, sep= ",",header=TRUE) 
+data_2 <- read.table("C:/Users/Admin/Documents/RNA_seq_Ali/File S1 - VST counts.csv",stringsAsFactors=F, sep= ",")
+
+VST_counts <- data
+colnames(VST_counts) <- data_2[1,]
+
+#Load ChiP data
+ChIP_data <- read.table("C:/Users/Admin/Documents/MultiBamCov_TSS_plus_200_NCBIrefseq_all_marks_all_TSS_pseudocount_dedup_dm6.txt"
+                        ,stringsAsFactors=F, sep="\t",header=FALSE)
+colnames(ChIP_data) <- c("Chr", "Start", "End","RefSeqID","Score","Strand","IC_4_6_K4me3_1","IC_4_6_K4me3_2","IC_6_8_K4me3_1","IC_6_8_K4me3_2","IC_8_10_K4me3_1","IC_8_10_K4me3_2","VC_4_6_K4me3_1","VC_4_6_K4me3_2","VC_68_K4me3_1_1","VC_68_K4me3_2_1","VC_810_K4me3_1_1","VC_810_K4me3_2_1","IC_4_6_K27ac_1","IC_4_6_K27ac_3","IC_6_8_K27ac_1","IC_6_8_K27ac_3","IC_8_10_K27ac_1","IC_8_10_K27ac_2","VC_4_6_K27ac_1","VC_4_6_K27ac_2","VC_68_K27ac_1_1","VC_68_K27ac_2_1","VC_810_K27ac_1_1","VC_810_K27ac_2_1","IC_4_6_K79me3_1","IC_4_6_K79me3_2","IC_6_8_K79me3_1","IC_6_8_K79me3_2","IC_8_10_K79me3_1","IC_8_10_K79me3_2","VC_4_6_K79me3_1","VC_4_6_K79me3_2","VC_68_K79me3_1_1","VC_68_K79me3_2_1","VC_810_K79me3_1_1","VC_810_K79me3_2_1","IC_4_6_K4mono_1","IC_4_6_K4mono_2","IC_6_8_K4mono_1","IC_6_8_K4mono_2","IC_8_10_K4mono_1","IC_8_10_K4mono_2","VC_4_6_K4mono_1","VC_4_6_K4mono_2","VC_68_K4mono_1_1","VC_68_K4mono_2_1","VC_810_K4mono_1_1","VC_810_K4mono_2_1","IC_4_6_K27me3_1","IC_4_6_K27me3_2","IC_6_8_K27me3_2","IC_6_8_K27me3_3","IC_8_10_K27me3_1","IC_8_10_K27me3_2","VC_4_6_K27me3_1","VC_4_6_K27me3_2","VC_68_K27me3_1_1","VC_68_K27me3_2_1","VC_810_K27me3_1_1","VC_810_K27me3_2_1"
+)
+
+#Load ID table
+ID_table <-  read.table("C:/Users/Admin/Documents/Name_conversion_NM_FbGn_complete_unirot-gene_ID_master_list.csv",stringsAsFactors=F, sep= "\t",header=TRUE) 
+
+l <- strsplit(as.character(ID_table$RefSeqID), ',')
+ID_table_2 <- data.frame(Name = unlist(l), Name.string = rep(ID_table$RefSeqID, lengths(l)))
+colnames(ID_table_2) <- c("RefSeq","RefSeqID")
+
+ID_table_long <- merge(ID_table_2,ID_table,by=c("RefSeqID"),all=TRUE)
+
+ID_table_long <- ID_table_long[!duplicated(ID_table_long[,c(2,4)]), ]
+colnames(ID_table_long) <- c("All_RefSeq", "RefSeqID","Gene","FBgn")
+ID_table_long$All_RefSeq <- paste0("'","'", ID_table_long$All_RefSeq, "'","'")
+ID_table_long$Gene <- paste0("'","'", ID_table_long$Gene, "'","'")
+
+
+colnames(ChIP_data) <- c("Chr", "Start", "End","RefSeqID","Score","Strand","IC_4_6_K4me3_1","IC_4_6_K4me3_2","IC_6_8_K4me3_1","IC_6_8_K4me3_2","IC_8_10_K4me3_1","IC_8_10_K4me3_2","VC_4_6_K4me3_1","VC_4_6_K4me3_2","VC_68_K4me3_1_1","VC_68_K4me3_2_1","VC_810_K4me3_1_1","VC_810_K4me3_2_1","IC_4_6_K27ac_1","IC_4_6_K27ac_3","IC_6_8_K27ac_1","IC_6_8_K27ac_3","IC_8_10_K27ac_1","IC_8_10_K27ac_2","VC_4_6_K27ac_1","VC_4_6_K27ac_2","VC_68_K27ac_1_1","VC_68_K27ac_2_1","VC_810_K27ac_1_1","VC_810_K27ac_2_1","IC_4_6_K79me3_1","IC_4_6_K79me3_2","IC_6_8_K79me3_1","IC_6_8_K79me3_2","IC_8_10_K79me3_1","IC_8_10_K79me3_2","VC_4_6_K79me3_1","VC_4_6_K79me3_2","VC_68_K79me3_1_1","VC_68_K79me3_2_1","VC_810_K79me3_1_1","VC_810_K79me3_2_1","IC_4_6_K4mono_1","IC_4_6_K4mono_2","IC_6_8_K4mono_1","IC_6_8_K4mono_2","IC_8_10_K4mono_1","IC_8_10_K4mono_2","VC_4_6_K4mono_1","VC_4_6_K4mono_2","VC_68_K4mono_1_1","VC_68_K4mono_2_1","VC_810_K4mono_1_1","VC_810_K4mono_2_1","IC_4_6_K27me3_1","IC_4_6_K27me3_2","IC_6_8_K27me3_2","IC_6_8_K27me3_3","IC_8_10_K27me3_1","IC_8_10_K27me3_2","VC_4_6_K27me3_1","VC_4_6_K27me3_2","VC_68_K27me3_1_1","VC_68_K27me3_2_1","VC_810_K27me3_1_1","VC_810_K27me3_2_1")
+
+#Merge ChIP data with ID Table
+chip_id_table <- merge(ChIP_data,ID_table_long,by= c("RefSeqID"),all.x=TRUE)
+
+#Merge ChIP_ID data with RNA data
+RNA_ChIP_data <- merge(chip_id_table,VST_counts,by=c("FBgn"),all.x=TRUE)
+
+#RNA_ChIP_data_cor <- RNA_ChIP_data[!duplicated(RNA_ChIP_data$RefSeqID), ]
+
+
+
+
+#Files from DeSeQ
+
+EL_IC_K4me3 <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_IC_K4me3_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+EL_IC_K27ac <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_IC_K27ac_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+EL_IC_K79me3 <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_IC_K79me3_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+EL_IC_K4me1 <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_IC_K4me1_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+EL_IC_K27me3 <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_IC_K27me3_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+
+EL_VC_K4me3 <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_VC_K4me3_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+EL_VC_K27ac <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_VC_K27ac_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+EL_VC_K79me3 <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_VC_K79me3_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+EL_VC_K4me1 <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_IC_K4me1_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+EL_VC_K27me3 <- read.table("C:/Users/Admin/Documents/FINAL_real_temporal_ANALYSIS_PROMOTER_DeSeq2/DESeq2_results_with_input_count_data_Temp_EL_VC_K27me3_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+
+
+IC_46_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K4me3_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_46_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K4me3_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_68_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K4me3_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_68_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K4me3_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_810_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K4me3_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_810_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K4me3_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_46_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K27ac_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_46_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K27ac_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_68_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K27ac_IC_TOP100_basemean100_200bp_promotor_no_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_68_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K27ac_VC_TOP100_basemean100_200bp_promotor_no_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_810_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K27ac_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_810_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K27ac_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_46_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K79me3_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_46_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K79me3_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_68_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K79me3_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_68_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K79me3_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_810_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K79me3_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_810_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K79me3_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_46_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K4me1_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_46_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K4me1_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_68_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K4me1_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_68_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K4me1_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_810_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K4me1_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_810_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K4me1_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+
+IC_46_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K27me3_IC_TOP100_basemean100_200bp_promotor_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_46_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_46h_K27me3_VC_TOP100_basemean100_200bp_promotor_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_68_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K27me3_IC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_68_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_68h_K27me3_VC_TOP100_basemean100_200bp_promotor.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+IC_810_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K27me3_IC_TOP100_basemean100_200bp_promotor_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+VC_810_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/Tissue_810h_K27me3_VC_TOP100_basemean100_200bp_promotor_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+
+ID_column <- c(  rep("IC_46_K4me3",100),rep("VC_46_K4me3",100),rep("IC_68_K4me3",100),rep("VC_68_K4me3",100),rep("IC_810_K4me3",100),rep("VC_810_K4me3",100),rep("IC_46_K27ac",100),rep("VC_46_K27ac",100),rep("IC_68_K27ac",100),rep("VC_68_K27ac",100),rep("IC_810_K27ac",100),rep("VC_810_K27ac",100),rep("IC_46_K79me3",100),rep("VC_46_K79me3",100),rep("IC_68_K79me3",100),rep("VC_68_K79me3",100),rep("IC_810_K79me3",100),rep("VC_810_K79me3",100),rep("IC_46_K4me1",100),rep("VC_46_K4me1",100),rep("IC_68_K4me1",100),rep("VC_68_K4me1",100),rep("IC_810_K4me1",100),rep("VC_810_K4me1",100),rep("IC_46_K27me3",100),rep("VC_46_K27me3",100),rep("IC_68_K27me3",100),rep("VC_68_K27me3",100),rep("IC_810_K27me3",100),rep("VC_810_K27me3",100)  )
+
+
+#Loading all promoters with a peak 
+
+Tissue_46_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_46h_K4me3_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_68_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_68h_K4me3_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_810_K4me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_810h_K4me3_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+Tissue_46_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_46h_K27ac_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_68_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_68h_K27ac_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_810_K27ac <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_810h_K27ac_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+Tissue_46_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_46h_K79me3_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_68_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_68h_K79me3_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_810_K79me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_810h_K79me3_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+Tissue_46_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_46h_K4me1_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_68_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_68h_K4me1_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_810_K4me1 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_810h_K4me1_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+Tissue_46_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_46h_K27me3_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_68_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_68h_K27me3_promoters_200bp_with_RNA_seq_VST.csv",stringsAsFactors=F, sep= "\t",header=T) 
+Tissue_810_K27me3 <- read.table("C:/Users/Admin/Documents/Final_Tissue_DeSeq_Tissue_Analysis/DESeq2_results_with_input_count_data_Tissue_810h_K27me3_promoters_200bp_with_RNA_seq_VST_NO_OUTLIER.csv",stringsAsFactors=F, sep= "\t",header=T) 
+
+
+
+
+
+```
+
+```{r CombineTOP, warning=FALSE}
+
+
+
+All_top_100 <- rbind.data.frame(IC_46_K4me3,VC_46_K4me3,IC_68_K4me3,VC_68_K4me3,IC_810_K4me3,VC_810_K4me3,
+                                IC_46_K27ac,VC_46_K27ac,IC_68_K27ac,VC_68_K27ac,IC_810_K27ac,VC_810_K27ac,
+                                IC_46_K79me3,VC_46_K79me3,IC_68_K79me3,VC_68_K79me3,IC_810_K79me3,VC_810_K79me3,
+                                IC_46_K4me1,VC_46_K4me1,IC_68_K4me1,VC_68_K4me1,IC_810_K4me1,VC_810_K4me1,
+                                IC_46_K27me3,VC_46_K27me3,IC_68_K27me3,VC_68_K27me3,IC_810_K27me3,VC_810_K27me3)
+
+
+TOP100_file_undup <- cbind(ID_column, All_top_100)
+
+#Muss noch auf duplicate gefiltert werden
+
+TOP100_file <- TOP100_file_undup[!duplicated(TOP100_file_undup$RefSeqID), ]
+
+
+#List of genes and RefSeqs
+unique__genes <- as.data.frame(unique(TOP100_file$Symbol))
+#unique__genes
+unique_Refseq <- as.data.frame(unique(TOP100_file$RefSeqID))
+colnames(unique_Refseq) <- c("unique_Refseq_all")
+#unique_Refseq
+
+
+#Filter Tissue specific resuts
+IC_all_upregulated_100 <- rbind.data.frame(IC_46_K4me3,IC_68_K4me3,IC_810_K4me3,
+                                           IC_46_K27ac,IC_68_K27ac,IC_810_K27ac,
+                                           IC_46_K79me3,IC_68_K79me3,IC_810_K79me3,
+                                           VC_46_K4me1,VC_68_K4me1,VC_810_K4me1,
+                                           VC_46_K27me3,VC_68_K27me3,VC_810_K27me3)
+IC_all_upregulated_100 <- unique(IC_all_upregulated_100[,1:120])
+
+VC_all_upregulated_100 <- rbind.data.frame(VC_46_K4me3,VC_68_K4me3,VC_810_K4me3,
+                                           VC_46_K27ac,VC_68_K27ac,VC_810_K27ac,
+                                           VC_46_K79me3,VC_68_K79me3,VC_810_K79me3,
+                                           IC_46_K4me1,IC_68_K4me1,IC_810_K4me1,
+                                           IC_46_K27me3,IC_68_K27me3,IC_810_K27me3)
+VC_all_upregulated_100 <- unique(VC_all_upregulated_100[,1:120])
+
+#VC_all_top_100 <- rbind.data.frame(VC_46_K4me3,VC_68_K4me3,VC_810_K4me3, VC_46_K27ac,VC_68_K27ac,VC_810_K27ac, VC_46_K79me3,VC_68_K79me3,VC_810_K79me3, VC_46_K4me1,VC_68_K4me1,VC_810_K4me1,VC_46_K27me3,VC_68_K27me3,VC_810_K27me3)
+
+#Hey wenn ich alle signifikanten veränderungen in einen 3D vector space mappe kann ich Genactivität über die 
+#Euklidische Distanz vorhersagen. Danke für die Inspiration.
+
+
+
+
+VC_all_top_100 <- subset(TOP100_file_undup, log2FoldChange > 0)
+IC_all_top_100 <- subset(TOP100_file_undup, log2FoldChange < 0)
+
+
+
+#ID_column_VC = c("VC_46_K4me3","VC_68_K4me3","VC_810_K4me3"," VC_46_K27ac","VC_68_K27ac","VC_810_K27ac"," VC_46_K79me3","VC_68_K79me3","VC_810_K79me3","46_K4me1","68_K4me1","810_K4me1","46_K27me3","68_K27me3","810_K27me3") )
+
+
+num_genes <- length(unique(TOP100_file$Symbol))
+sig1 <- length(unique(TOP100_file$RefSeqID))
+num_genes
+sig1
+
+ChiP_tables_MAT  <- data.matrix(TOP100_file[,9:68]) 
+
+#ChiP_MAT <- na.omit(ChiP_tables_MAT) # listwise deletion of missing
+#mydata <- scale(mydata[-1]) # standardize variables 
+
+# Determine number of clusters
+wss <- (nrow(ChiP_tables_MAT)-1)*sum(apply(ChiP_tables_MAT,2,var))
+for (i in 1:20) wss[i] <- sum(kmeans(ChiP_tables_MAT,
+                                     centers=i)$withinss)
+plot(1:20, wss, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares")
+
+
+# K-Means Cluster Analysis
+fit3 <- kmeans(TOP100_file[,9:68], 6) # 6 cluster solution
+# get cluster means
+aggregate(TOP100_file,by=list(fit3$cluster),FUN=mean)
+# append cluster assignment
+TOP100_file_6_kmeans <- data.frame(TOP100_file, fit3$cluster) 
+#write.table(mydata, "C:/Users/aglahs/Downloads/TSS_plus_600_kmeans_clustering_7_clusters.txt", sep="\t") 
+
+TOP100_file_6_kmeans <- TOP100_file_6_kmeans[order(TOP100_file_6_kmeans$fit3.cluster),]
+
+heat_data_matrix <- data.matrix(log2(TOP100_file_6_kmeans[9:68]))
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix, Rowv=NA, Colv=NA, col=pal, scale="none",  ylab="TSSs")
+
+
+``` 
+
+
+```{r ComboineALLfol2FC}
+
+#List of all TSS with a peak
+
+library(purrr)
+
+#Combined_large_list <- list(Tissue_46_K4me3[,c(1:7,118,119,122)],Tissue_68_K4me3[,c(1:7,118,119,122)],Tissue_810_K4me3[,c(1:7,118,119,122)],Tissue_46_K27ac[,c(1:7,118,119,122)],Tissue_68_K27ac[,c(1:7,118,119,122)],Tissue_810_K27ac[,c(1:7,118,119,122)],Tissue_46_K79me3[,c(1:7,118,119,122)],Tissue_68_K79me3[,c(1:7,118,119,122)],Tissue_810_K79me3[,c(1:7,118,119,122)],Tissue_46_K4me1[,c(1:7,118,119,122)],Tissue_68_K4me1[,c(1:7,118,119,122)],Tissue_810_K4me1[,c(1:7,118,119,122)],Tissue_46_K27me3[,c(1:7,118,119,122)],Tissue_68_K27me3[,c(1:7,118,119,122)],Tissue_810_K27me3[,c(1:7,118,119,122)]) %>% reduce(full_join, by = c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" ,"CGID" ,"Symbol"))                      
+
+#colnames(Combined_large_list) = c("Fbgn", "RefSeqID","Chr","Start","End","Score","Strand","CGID","Symbol" ,"Tissue_46_K4me3","Tissue_68_K4me3","Tissue_810_K4me3","Tissue_46_K27ac","Tissue_68_K27ac","Tissue_810_K27ac","Tissue_46_K79me3","Tissue_68_K79me3","Tissue_810_K79me3","Tissue_46_K4me1","Tissue_68_K4me1","Tissue_810_K4me1","Tissue_46_K27me3","Tissue_68_K27me3","Tissue_810_K27me3")
+
+RNA_ChIP_data_new  <- RNA_ChIP_data[order(RNA_ChIP_data$FBgn),]
+RNA_ChIP_data_new  <- RNA_ChIP_data[,c(1:67,70:120)]
+RNA_ChIP_data_new <- unique(RNA_ChIP_data_new)
+
+
+#Should be unnessecary
+#Tissue_68_K4me3 <- unique(Tissue_68_K4me3[,c(1:67,70:145)])
+#Tissue_810_K4me3 <- unique(Tissue_810_K4me3[,c(1:67,70:145)])
+
+#Tissue_46_K27ac <- unique(Tissue_46_K27ac[,c(1:67,70:145)])
+#Tissue_68_K27ac <- unique(Tissue_68_K27ac[,c(1:67,70:145)])
+#Tissue_810_K27ac <- unique(Tissue_810_K27ac[,c(1:67,70:145)])
+
+#Tissue_46_K79me3 <- unique(Tissue_46_K79me3[,c(1:67,70:145)])
+#Tissue_68_K79me3 <- unique(Tissue_68_K79me3[,c(1:67,70:145)])
+#Tissue_810_K79me3 <- unique(Tissue_810_K79me3[,c(1:67,70:145)])
+
+#Tissue_46_K4me1 <- unique(Tissue_46_K4me1[,c(1:67,70:145)])
+#Tissue_68_K4me1 <- unique(Tissue_68_K4me1[,c(1:67,70:145)])
+#Tissue_810_K4me1 <- unique(Tissue_810_K4me1[,c(1:67,70:145)]) 
+
+#Tissue_46_K27me3 <- unique(Tissue_46_K27me3[,c(1:67,70:145)]) 
+#Tissue_68_K27me3 <- unique(Tissue_68_K27me3[,c(1:67,70:145)])
+#Tissue_810_K27me3 <- unique(Tissue_810_K27me3[,c(1:67,70:145)]) 
+
+
+TRIERBNF <- merge(RNA_ChIP_data,Tissue_46_K4me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_68_K4me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_810_K4me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_46_K27ac[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- unique(TRIERBNF) 
+TRIERBNF <- merge(TRIERBNF,Tissue_68_K27ac[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_810_K27ac[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_46_K79me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_68_K79me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_810_K79me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- unique(TRIERBNF) 
+TRIERBNF <- merge(TRIERBNF,Tissue_46_K4me1[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_68_K4me1[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_810_K4me1[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_46_K27me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- merge(TRIERBNF,Tissue_68_K27me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF <- unique(TRIERBNF) 
+Combined_large_list <- merge(TRIERBNF,Tissue_810_K27me3[,c(2,122)], by= "RefSeqID", all.x =T)
+Combined_large_list <- unique(Combined_large_list) 
+
+
+colnames(Combined_large_list)[121:135] <- c("Tissue_46_K4me3","Tissue_68_K4me3","Tissue_810_K4me3","Tissue_46_K27ac","Tissue_68_K27ac","Tissue_810_K27ac","Tissue_46_K79me3","Tissue_68_K79me3","Tissue_810_K79me3","Tissue_46_K4me1","Tissue_68_K4me1","Tissue_810_K4me1","Tissue_46_K27me3","Tissue_68_K27me3","Tissue_810_K27me3")
+
+
+#THISPARTDOESNOTWORK
+
+#K4me3_join <- full_join(full_join(Tissue_46_K4me3[,c(1:7,118,122)],Tissue_68_K4me3[,c(1:7,118,122)],by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")), Tissue_810_K4me3[,c(1:7,118,122)],by = c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID"))
+#K27ac_join <- full_join(full_join(Tissue_46_K27ac[,c(1:7,118,122)],Tissue_68_K27ac[,c(1:7,118,122)],by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")), Tissue_810_K27ac[,c(1:7,118,122)],by = c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID"))
+#K79me3_join <- full_join(full_join(Tissue_46_K79me3[,c(1:7,118,122)],Tissue_68_K79me3[,c(1:7,118,122)],by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")), Tissue_810_K79me3[,c(1:7,118,122)],by = c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID"))
+#K4me1_join <- full_join(full_join(Tissue_46_K4me1[,c(1:7,118,122)],Tissue_68_K4me1[,c(1:7,118,122)],by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")), Tissue_810_K4me1[,c(1:7,118,122)],by = c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID"))
+#K27me3_join <- full_join(full_join(Tissue_46_K27me3[,c(1:7,118,122)],Tissue_68_K27me3[,c(1:7,118,122)],by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")), Tissue_810_K27me3[,c(1:7,118,122)],by = c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID"))
+#Combined_large_list <- full_join(full_join(full_join(full_join(K4me3_join,
+#                                            K27ac_join,by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")), #
+ #                                      K79me3_join,by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")),
+  #                           K4me1_join,by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")),
+   #                K27me3_join,by =c("FBgn" , "RefSeqID" , "Chr" , "Start" , "End" , "Score" ,"Strand" , "CGID")) 
+#colnames(Combined_large_list) = c("FBgn", "RefSeqID","Chr","Start","End","Score","Strand","CGID","Tissue_46_K4me3","Tissue_68_K4me3","Tissue_810_K4me3","Tissue_46_K27ac","Tissue_68_K27ac","Tissue_810_K27ac","Tissue_46_K79me3","Tissue_68_K79me3","Tissue_810_K79me3","Tissue_46_K4me1","Tissue_68_K4me1","Tissue_810_K4me1","Tissue_46_K27me3","Tissue_68_K27me3","Tissue_810_K27me3")
+
+
+
+
+
+#Replace all NA with 0
+Combined_large_list[,121:135] <- replace(Combined_large_list[,121:135], is.na(Combined_large_list[,121:135]), 0)
+#drops <- c("Symbol")
+#Combined_large_list <- Combined_large_list[ , !(names(Combined_large_list) %in% drops)]
+
+
+
+
+
+
+# K-Means Cluster Analysis
+fit3 <- kmeans(Combined_large_list[,121:135], 6) # 6 cluster solution
+# get cluster means
+aggregate(Combined_large_list,by=list(fit3$cluster),FUN=mean)
+# append cluster assignment
+All_file_6_kmeans <- data.frame(Combined_large_list, fit3$cluster) 
+#write.table(mydata, "C:/Users/aglahs/Downloads/TSS_plus_600_kmeans_clustering_7_clusters.txt", sep="\t") 
+
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$fit3.cluster),]
+
+#colnames(All_file_6_kmeans) = c("Fbgn","RefSeqID","Chr","Start","End","Score","Strand","CGID","Tissue_46_K4me3","Tissue_68_K4me3","Tissue_810_K4me3","Tissue_46_K27ac","Tissue_68_K27ac","Tissue_810_K27ac","Tissue_46_K79me3","Tissue_68_K79me3","Tissue_810_K79me3","Tissue_46_K4me1","Tissue_68_K4me1","Tissue_810_K4me1","Tissue_46_K27me3","Tissue_68_K27me3","Tissue_810_K27me3", "kmeans_6")
+
+#Heatmap_kmenas
+
+heat_data_matrix <- data.matrix(All_file_6_kmeans[121:135])
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix, Rowv=NA, Colv=NA, col=pal, scale="none",  ylab="TSSs", breaks=seq(-3, 3, length.out=101))
+
+
+#colnames(All_file_6_kmeans) = c("Fbgn","RefSeqID","Chr","Start","End","Score","Strand","CGID","Tissue_46_K4me3","Tissue_68_K4me3","Tissue_810_K4me3","Tissue_46_K27ac","Tissue_68_K27ac","Tissue_810_K27ac","Tissue_46_K79me3","Tissue_68_K79me3","Tissue_810_K79me3","Tissue_46_K4me1","Tissue_68_K4me1","Tissue_810_K4me1","Tissue_46_K27me3","Tissue_68_K27me3","Tissue_810_K27me3", "kmeans_6")
+
+#Heatmap custom sort
+
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_810_K27ac),]
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_68_K27ac),]
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_46_K27ac),]
+
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_46_K27me3),]
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_68_K27me3),]
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_810_K27me3),]
+
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_810_K79me3),]
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_68_K79me3),]
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_46_K79me3),]
+
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_810_K4me3),]
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_68_K4me3),]
+All_file_6_kmeans <- All_file_6_kmeans[order(All_file_6_kmeans$Tissue_46_K4me3),]
+
+heat_data_matrix <- data.matrix(All_file_6_kmeans[121:135])
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix, Rowv=NA, Colv=NA, col=pal, scale="none",  ylab="TSSs", breaks=seq(-3, 3, length.out=101))
+
+```
+
+
+```{r Euklidian distance}
+
+#Calculate euklidian distance
+
+#K27_vector = (All_file_6_kmeans$Tissue_46_K27ac + All_file_6_kmeans$Tissue_68_K27ac + All_file_6_kmeans$Tissue_810_K27ac) - (All_file_6_kmeans$Tissue_46_K27me3 + All_file_6_kmeans$Tissue_68_K27me3 + All_file_6_kmeans$Tissue_68_K27me3)
+
+#K4_vector = (All_file_6_kmeans$Tissue_46_K4me3 + All_file_6_kmeans$Tissue_68_K4me3 + All_file_6_kmeans$Tissue_810_K4me3) - (All_file_6_kmeans$Tissue_46_K4me1 + All_file_6_kmeans$Tissue_68_K4me1 + All_file_6_kmeans$Tissue_810_K4me1)
+
+#K79_vector =  (All_file_6_kmeans$Tissue_46_K79me3 + All_file_6_kmeans$Tissue_68_K79me3 + All_file_6_kmeans$Tissue_810_K79me3)
+
+#Euklidian_dist = sqrt((K27_vector*K27_vector)+ (K4_vector*K4_vector) + (K79_vector*K79_vector))
+
+#MAIN file
+#Combine and sort file
+#All_file_6_kmeans_euklid <- cbind(All_file_6_kmeans, K4_vector, K27_vector, K79_vector, Euklidian_dist)
+#Order by euklidian dist
+#All_file_6_kmeans_euklid <- All_file_6_kmeans_euklid[order(All_file_6_kmeans_euklid$Euklidian_dist),]
+
+
+#Alternative_Euklidian_distance
+
+#Combined_temporal_vectors
+K4me3_vector = (All_file_6_kmeans$Tissue_46_K4me3 + All_file_6_kmeans$Tissue_68_K4me3 + All_file_6_kmeans$Tissue_810_K4me3)
+K27ac_vector = (All_file_6_kmeans$Tissue_46_K27ac + All_file_6_kmeans$Tissue_68_K27ac + All_file_6_kmeans$Tissue_810_K27ac)
+K79me3_vector = (All_file_6_kmeans$Tissue_46_K79me3 + All_file_6_kmeans$Tissue_68_K79me3 + All_file_6_kmeans$Tissue_810_K79me3)
+K4me1_vector = (All_file_6_kmeans$Tissue_46_K4me1 + All_file_6_kmeans$Tissue_68_K4me1 + All_file_6_kmeans$Tissue_810_K4me1)
+K27me3_vector = (All_file_6_kmeans$Tissue_46_K27me3 + All_file_6_kmeans$Tissue_68_K27me3 + All_file_6_kmeans$Tissue_810_K27me3)
+
+Euklidian_dist = sqrt((K27ac_vector*K27ac_vector) +(K4me3_vector*K4me3_vector) + (K79me3_vector*K79me3_vector)+(K4me1_vector*K4me1_vector)+(K27me3_vector*K27me3_vector))
+
+All_file_6_kmeans_euklid <- cbind(All_file_6_kmeans, K4me3_vector, K27ac_vector, K79me3_vector, K4me1_vector, K27me3_vector, Euklidian_dist)
+
+
+write.table(All_file_6_kmeans_euklid,"Combined_all_TSS_base_mean_100_with_all_Log2FC_summary_and_euclid.csv", sep = "\t",quote=F, row.names=F)
+
+
+#Individual vectors
+K4em3_46_vector = All_file_6_kmeans$Tissue_46_K4me3
+K27ac_46_vector = All_file_6_kmeans$Tissue_46_K27ac 
+K79em3_46_vector = All_file_6_kmeans$Tissue_46_K79me3 
+K4em1_46_vector = All_file_6_kmeans$Tissue_46_K4me1 
+K27me3_46_vector = All_file_6_kmeans$Tissue_46_K27me3 
+K4em3_68_vector = All_file_6_kmeans$Tissue_68_K4me3 
+K27ac_68_vector = All_file_6_kmeans$Tissue_68_K27ac 
+K79em3_68_vector = All_file_6_kmeans$Tissue_68_K79me3 
+K4em1_68_vector = All_file_6_kmeans$Tissue_68_K4me1 
+K27me3_68_vector = All_file_6_kmeans$Tissue_68_K27me3 
+K4em3_810_vector = All_file_6_kmeans$Tissue_810_K4me3
+K27ac_810_vector = All_file_6_kmeans$Tissue_810_K27ac
+K79em3_810_vector = All_file_6_kmeans$Tissue_810_K79me3
+K4em1_810_vector = All_file_6_kmeans$Tissue_810_K4me1
+K27me3_810_vector = All_file_6_kmeans$Tissue_810_K27me3
+
+
+
+
+#Combine_wih_specific_TOP_100
+Large_list_TOP_subset <- All_file_6_kmeans_euklid[All_file_6_kmeans_euklid$RefSeqID %in% as_vector(unique_Refseq), ] 
+
+
+#Heatmap of euklidian sort
+
+heat_data_matrix_euklid <- data.matrix(All_file_6_kmeans_euklid[121:135])
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid, Rowv=NA, Colv=NA, col=pal, scale="none",  ylab="TSSs", breaks=seq(-3, 3, length.out=101))
+
+uni_refSeq_df <- as.data.frame(unique_Refseq)
+colnames(uni_refSeq_df) <- c("RefSeqID")
+#Make summary dataframe and save to csv
+Combined_TOP100_and_all_TSS <- left_join(uni_refSeq_df,All_file_6_kmeans_euklid, by =c( "RefSeqID" ))
+#drops <- c("Chr.y","Start.y","End.y","Score.y","Strand.y","kmeans_6")
+#Combined_TOP100_and_all_TSS <- Combined_TOP100_and_all_TSS[ , !(names(Combined_TOP100_and_all_TSS) %in% drops)]
+
+
+Combined_TOP100_and_all_TSS <- Combined_TOP100_and_all_TSS[order(-Combined_TOP100_and_all_TSS$Euklidian_dist),]
+
+unique_Combined_TOP100_and_all_TSS <- unique(Combined_TOP100_and_all_TSS)
+
+head(Combined_TOP100_and_all_TSS[,c(1:7,118:119)],n=20)
+
+write.table(unique_Combined_TOP100_and_all_TSS,"Combined_TOP100_and_all_TSS_with_at_least_a_peak_with_all_Log2FC_summary_and_euclid.csv", sep = "\t",quote=F, row.names=F)
+
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[121:135])
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid, Rowv=NA, Colv=NA, col=pal, scale="none",  ylab="TSSs", breaks=seq(-3, 3, length.out=101))
+
+#test <- seq(-1,3, len=20)
+#shift.BR <- colorRamp(c("blue","white", "red"), bias=0)((1:20)/20)
+#tpal <- rgb(shift.BR, maxColorValue=255)
+#barplot(test,col = tpal) 
+
+
+heat_data_matrix_euklid <- data.matrix(Large_list_TOP_subset[121:135])
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid, Rowv=NA, Colv=NA, col=pal, scale="none",  ylab="TSSs", breaks=seq(-3, 3, length.out=101))
+cat('\r\n\r\n')
+
+
+#Hirarchical clustering
+
+heat_data_matrix_euklid <- data.matrix(Large_list_TOP_subset[121:135])
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid)))
+heatmap(heat_data_matrix_euklid, Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T, breaks=seq(-3, 3, length.out=101))
+cat('\r\n\r\n')
+
+```
+
+```{r TOP100variablegenes}
+
+
+
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:100,121:135])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:100,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid)))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid, Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T, breaks=seq(-3, 3, length.out=101))
+cat('\r\n\r\n')
+
+
+
+
+
+cat('\r\n\r\n')
+
+#res_cor, 2)
+par(oma=c(2,1,1,1))
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:100,]$Symbol
+heatmap.2(heat_data_matrix_euklid, cexRow=0.35, cexCol = 0.55,Colv=FALSE,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 100 differential TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=pal,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          dendrogram="row")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+
+cat('\r\n\r\n')
+
+
+par(oma=c(2,3,1,1))
+#col.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:100,]$Symbol
+heatmap.2((t(heat_data_matrix_euklid)), cexRow=0.65, cexCol = 0.45,Rowv=FALSE,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 100 differential TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=pal,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          dendrogram="col")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+
+cat('\r\n\r\n')
+
+#Top25
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:25,121:135])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:25,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid)))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid, Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T, breaks=seq(-3, 3, length.out=101))
+cat('\r\n\r\n')
+
+
+cat('\r\n\r\n')
+
+
+#res_cor, 2)
+par(oma=c(2,1,1,1))
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:25,]$Symbol
+heatmap.2(heat_data_matrix_euklid[1:25,], cexRow=0.35, cexCol = 0.85,Colv=FALSE,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 25 differential TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=pal,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          dendrogram="row")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+
+cat('\r\n\r\n')
+
+
+par(oma=c(2,3,1,1))
+#col.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:100,]$Symbol
+heatmap.2((t(heat_data_matrix_euklid[1:25,])), cexRow=0.65, cexCol = 0.75,Rowv=FALSE,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 25 differential TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=pal,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          dendrogram="col")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+
+cat('\r\n\r\n')
+
+
+
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:25,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:25,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:125], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T, breaks=seq(-3, 3, length.out=101))
+cat('\r\n\r\n')
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:25,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:25,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:25,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:25,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+
+#TOP40
+
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:125], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T, breaks=seq(-3, 3, length.out=101))
+cat('\r\n\r\n')
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+#TOP50
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:50,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:50,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:125], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T, breaks=seq(-3, 3, length.out=101))
+cat('\r\n\r\n')
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:50,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:50,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heat_data_matrix_euklid <- data.matrix(unique_Combined_TOP100_and_all_TSS[1:50,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:50,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:125])))
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+cat('\r\n\r\n')
+
+
+par(oma=c(2,1,1,1))
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:50,]$Symbol
+heatmap.2(heat_data_matrix_euklid[1:50,111:125], cexRow=0.55, cexCol = 0.85,Colv=FALSE,Rowv = dd,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 50 differential TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=pal,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          dendrogram="row")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+
+
+par(oma=c(2,1,1,1))
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:50,]$Symbol
+heatmap.2(heat_data_matrix_euklid[1:50,1:60], cexRow=0.55, cexCol = 0.85,Colv=FALSE,Rowv = dd,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 50 differential TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=tpal,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          dendrogram="row")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+
+par(oma=c(2,1,1,1))
+row.names(heat_data_matrix_euklid) <- unique_Combined_TOP100_and_all_TSS[1:50,]$Symbol
+heatmap.2(heat_data_matrix_euklid[1:50,61:109], cexRow=0.55, cexCol = 0.85,Colv=FALSE,Rowv = dd,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 50 differential TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=tpal)#,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          #dendrogram="row")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+
+```
+
+
+```{r TemporalDateframes}
+
+TRIERBNF2 <- merge(RNA_ChIP_data,EL_IC_K4me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- merge(TRIERBNF2,EL_IC_K27ac[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- merge(TRIERBNF2,EL_IC_K79me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- merge(TRIERBNF2,EL_IC_K4me1[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- unique(TRIERBNF2) 
+TRIERBNF2 <- merge(TRIERBNF2,EL_IC_K27me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- merge(TRIERBNF2,EL_VC_K4me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- merge(TRIERBNF2,EL_VC_K27ac[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- merge(TRIERBNF2,EL_VC_K79me3[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- merge(TRIERBNF2,EL_VC_K4me1[,c(2,122)], by= "RefSeqID", all.x =T)
+TRIERBNF2 <- merge(TRIERBNF2,EL_VC_K27me3[,c(2,122)], by= "RefSeqID", all.x =T)
+Combined_large_list2 <- unique(TRIERBNF2) 
+
+
+
+colnames(Combined_large_list2)[121:130] <- c("EL_IC_K4me3","EL_IC_K27ac","EL_IC_K79me3","EL_IC_K4me1","EL_IC_K27me3","EL_VC_K4me3","EL_VC_K27ac","EL_VC_K79me3","EL_VC_K4me1","EL_VC_K27me3")
+
+
+
+#Replace all NA with 0
+Combined_large_list2[,121:130] <- replace(Combined_large_list2[,121:130], is.na(Combined_large_list2[,121:130]), 0)
+#drops <- c("Symbol")
+#Combined_large_list <- Combined_large_list[ , !(names(Combined_large_list) %in% drops)]
+
+
+
+#Combined_temporal_vectors
+T_K4me3_vector = (abs(Combined_large_list2$EL_IC_K4me3) + abs(Combined_large_list2$EL_VC_K4me3))
+T_K27ac_vector = (abs(Combined_large_list2$EL_IC_K27ac) + abs(Combined_large_list2$EL_VC_K27ac))
+T_K79me3_vector = (abs(Combined_large_list2$EL_IC_K79me3) + abs(Combined_large_list2$EL_VC_K79me3))
+T_K4me1_vector = (abs(Combined_large_list2$EL_IC_K4me1) + abs(Combined_large_list2$EL_VC_K4me1))
+T_K27me3_vector = (abs(Combined_large_list2$EL_IC_K27me3) + abs(Combined_large_list2$EL_VC_K27me3))
+
+Euklidian_dist2 = sqrt((T_K27ac_vector*T_K27ac_vector) +(T_K4me3_vector*T_K4me3_vector) + (T_K79me3_vector*T_K79me3_vector)+(T_K4me1_vector*T_K4me1_vector)+(T_K27me3_vector*T_K27me3_vector))
+
+Temp_All_file_6_euklid <- cbind(Combined_large_list2, T_K4me3_vector, T_K27ac_vector, T_K79me3_vector, T_K4me1_vector, T_K27me3_vector, Euklidian_dist2)
+
+
+write.table(Temp_All_file_6_euklid,"Combined_Temporal_all_TSS_base_mean_100_with_all_Log2FC_summary_and_euclid.csv", sep = "\t",quote=F, row.names=F)
+
+
+
+Dist_IC_temp = (Combined_large_list2$EL_IC_K4me3 + Combined_large_list2$EL_IC_K27ac+ Combined_large_list2$EL_IC_K79me3 + Combined_large_list2$EL_IC_K4me1 - Combined_large_list2$EL_IC_K27me3)
+
+Dist_VC_temp = (Combined_large_list2$EL_VC_K4me3 + Combined_large_list2$EL_VC_K27ac+ Combined_large_list2$EL_VC_K79me3 + Combined_large_list2$EL_VC_K4me1 - Combined_large_list2$EL_VC_K27me3)
+
+Dist_sub_IC_VC <- Dist_IC_temp - Dist_VC_temp
+
+Temp_All_file_6_euklid_dist <- cbind(Temp_All_file_6_euklid, Dist_IC_temp, Dist_VC_temp, Dist_sub_IC_VC)
+
+Temp_All_file_6_euklid_dist <-  Temp_All_file_6_euklid_dist[order(-Temp_All_file_6_euklid_dist$Euklidian_dist2),]
+
+
+
+
+
+write.table(Temp_All_file_6_euklid_dist,"Combined_Temporal_all_TSS_base_mean_100_with_all_Log2FC_summary_and_euclid_dist.csv", sep = "\t",quote=F, row.names=F)
+
+
+```
+
+```{r Plot_Temp_data}
+
+#Top temp genes with high variance
+heat_data_matrix_euklid <- data.matrix(Temp_All_file_6_euklid_dist[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:120])))
+redgreen <- c("red", "white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:120], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+
+
+#heat_data_matrix_euklid <- data.matrix(Temp_All_file_6_euklid_dist[1:75,c(8:117,121:135)])
+#row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:75,]$Symbol
+#dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:120])))
+#shift.BR <- colorRamp(c("blue","white", "red"), bias=1)((1:20)/20)
+#tpal <- rgb(shift.BR, maxColorValue=255)
+#heatmap(heat_data_matrix_euklid[,111:120], Colv=NA, col=tpal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+#cat('\r\n\r\n')
+
+#shift.BR <- colorRamp(c("white", "blue"), bias=1)((1:20)/20)
+#tpal <- rgb(shift.BR, maxColorValue=255)
+#heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=tpal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+#cat('\r\n\r\n')
+
+
+#heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=tpal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+cat('\r\n\r\n')
+
+
+
+par(oma=c(2,1,1,1))
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[c(2,1,3:40),]$Symbol
+heatmap.2(heat_data_matrix_euklid[c(2,1,3:40),111:120], cexRow=0.55, cexCol = 0.85,Colv=FALSE,Rowv = dd,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 50 temporal TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=pal,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          dendrogram="row")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+cat('\r\n\r\n')
+
+par(oma=c(2,1,1,1))
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:40,]$Symbol
+heatmap.2(heat_data_matrix_euklid[1:40,1:60], cexRow=0.55, cexCol = 0.85,Colv=FALSE,Rowv = dd,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 50 temporal TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=tpal,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          dendrogram="row")    # only draw a row dendrogram
+#Colv="NA")
+#tracecol=NA, tracerow=NA)
+cat('\r\n\r\n')
+
+par(oma=c(2,1,1,1))
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:40,]$Symbol
+heatmap.2(heat_data_matrix_euklid[1:40,61:109], cexRow=0.55, cexCol = 0.85,Colv=FALSE,Rowv = dd,
+          #cellnote = round(res_cor, 2),
+         # notecex = 0.35, # same data set for cell labels
+         main = "log2FC Top 50 temporal TSS", # heat map title
+          #notecol="black",      # change font color of cell labels to black
+         density.info="none",  # turns off density plot inside color legend
+        trace="none",         # turns off trace lines inside the heat map
+          #margins =c(12,9),     # widens margins around plot
+          col=tpal)#,       # use on color palette defined earlier
+          #breaks=col_breaks,    # enable color transition at specified limits
+          #dendrogram="row")    # only draw a row dendrogram
+#Colv="NA")
+cat('\r\n\r\n')
+
+
+
+
+#Top temp genes with high variance between tissues
+Temp_All_file_6_euklid_dist <-  Temp_All_file_6_euklid_dist[order(-abs(Temp_All_file_6_euklid_dist$Dist_sub_IC_VC)),]
+
+heat_data_matrix_euklid <- data.matrix(Temp_All_file_6_euklid_dist[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:120])))
+redgreen <- c("blue", "white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:120], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+
+#Top temp genes in IC late
+Temp_All_file_6_euklid_dist <-  Temp_All_file_6_euklid_dist[order(-Temp_All_file_6_euklid_dist$Dist_IC_temp),]
+
+heat_data_matrix_euklid <- data.matrix(Temp_All_file_6_euklid_dist[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:120])))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:120], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+
+#Top temp genes in IC early
+Temp_All_file_6_euklid_dist <-  Temp_All_file_6_euklid_dist[order(Temp_All_file_6_euklid_dist$Dist_IC_temp),]
+
+heat_data_matrix_euklid <- data.matrix(Temp_All_file_6_euklid_dist[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:120])))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:120], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+
+
+#Top temp genes in VC late
+Temp_All_file_6_euklid_dist <-  Temp_All_file_6_euklid_dist[order(-Temp_All_file_6_euklid_dist$Dist_VC_temp),]
+
+heat_data_matrix_euklid <- data.matrix(Temp_All_file_6_euklid_dist[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:120])))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:120], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+
+#Top temp genes in VC early
+Temp_All_file_6_euklid_dist <-  Temp_All_file_6_euklid_dist[order(Temp_All_file_6_euklid_dist$Dist_VC_temp),]
+
+heat_data_matrix_euklid <- data.matrix(Temp_All_file_6_euklid_dist[1:40,c(8:117,121:135)])
+row.names(heat_data_matrix_euklid) <- Temp_All_file_6_euklid_dist[1:40,]$Symbol
+dd <- as.dendrogram(hclust(dist(heat_data_matrix_euklid[,111:120])))
+redgreen <- c("blue","white", "red") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,111:120], Colv=NA, col=pal, scale="none",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+redgreen <- c("white", "blue") 
+pal <- colorRampPalette(redgreen)(100)
+heatmap(heat_data_matrix_euklid[,1:60], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+heatmap(heat_data_matrix_euklid[,61:110], Colv=NA, col=pal, scale="row",  ylab="TSSs",Rowv=dd,keep.dendro=T)
+cat('\r\n\r\n')
+
+
+
+
+```
+
