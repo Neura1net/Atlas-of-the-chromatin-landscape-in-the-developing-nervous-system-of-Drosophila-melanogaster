@@ -2,7 +2,7 @@
 This repository houses all processed data files and the complete analytical codebase utilized for my biology dissertation. It supports the findings presented in "Atlas of the chromatin landscape in the developing nervous system of Drosophila melanogaster" by providing full reproducibility and access to the underlying computational work.
 
 Supplementary Material
-All processed data and analysis code for this dissertation have been made publicly accessible. In particular, a GitHub repository [(e.g. https://github.com/… as provided to reviewers)](https://github.com/Neura1net/Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster/edit/main/README.md) contains all scripts and processed datasets generated in this work. This repository replicates the original folder structure and includes the following content:
+All processed data and analysis code for this dissertation have been made publicly accessible. In particular, a GitHub repository [(Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster/edit/main/README.md)](https://github.com/Neura1net/Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster/edit/main/README.md) contains all scripts and processed datasets generated in this work. This repository replicates the original folder structure and includes the following content:
 
 •	BiTS_ATAC_data_dm6_Glahs_Karabacak: Results of the BiTS ATAC-seq experiments (peak calls, DESeq2 results tables, multiBamCov inputs, and normalized signal files).
 
