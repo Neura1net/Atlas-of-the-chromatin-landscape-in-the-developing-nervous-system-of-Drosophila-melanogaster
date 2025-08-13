@@ -15,4 +15,10 @@ All processed data and analysis code for this dissertation have been made public
 •	EpicSeg_HMM_dm6_Supplement_Glahs: Hidden Markov Model (HMM) parameters, segmentation results, and state-transition data for the epicSeg chromatin-state analysis.
 
 
-Raw sequencing data (original FASTQ files for all ATAC-seq and ChIP-seq libraries) will be archived on an external hard drive or directly on the EDOC-Server at the Humboldt-Universität Library. These raw data are available on request (for example, via the Library’s research data service desk) for any interested reader. This arrangement ensures long-term preservation and accessibility of the raw datasets, in line with institutional research-data policies.
+Raw sequencing data (original FASTQ files for all ATAC-seq and ChIP-seq libraries) will be archived on an external hard drive or directly on the EDOC-Server at the Humboldt-Universität Library. These raw data are available via the HU Berlin Library’s research data service (EDOC) for any interested reader. This arrangement ensures long-term preservation and accessibility of the raw datasets, in line with institutional research-data policies.
+
+License:
+Atlas of the chromatin landscape in the developing nervous system of Drosophila
+melanogaster © 2022 by Alexander Glahs is licensed under Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International. To view a copy of this license,
+visit https://creativecommons.org/licenses/by-nc-sa/4.0/
