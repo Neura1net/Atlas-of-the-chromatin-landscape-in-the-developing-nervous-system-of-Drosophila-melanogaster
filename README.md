@@ -1,7 +1,9 @@
 # Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster
 This repository houses all processed data files and the complete analytical codebase utilized for my biology dissertation. It supports the findings presented in "Atlas of the chromatin landscape in the developing nervous system of Drosophila melanogaster" by providing full reproducibility and access to the underlying computational work.
 
+
 DOI of the original Disseration with the Title "Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster" : DOI:XXXX.XXXX
+
 DOI of this collection of suplemental data: DOI:XXXX.XXXX
 
 Supplementary Material
@@ -23,25 +25,49 @@ DDC classification 574.3 Developmental Biology
 
 Keywords: 
 Drosophila melanogaster
+
 Central nervous system development
+
 Neurogenic tissue specification
+
 Neuroblast differentiation
+
 Neuroectoderm (ventral column, intermediate column)
+
 Stem cells
+
 Genomic regulatory state
+
 Histone modifications
+
 Chromatin accessibility
+
 Cis-regulatory modules (CRMs)
+
 Differentially regulated genes (DRGs)
+
 Spatiotemporal gene regulation
+
 Differential peak calling
+
 Differential enrichment analysis
+
 Machine learning
+
 Gene regulatory networks
+
 Sequence motif enrichment
+
 Tissue-specific gene regulation
+
 Neurogenesis
+
 Tissue differentiation
+
+
+Author: Alexander Glahs
+
+Email: aglahs@yahoo.de
 
 License:
 Atlas of the chromatin landscape in the developing nervous system of Drosophila
