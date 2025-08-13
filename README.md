@@ -75,6 +75,7 @@ Tissue differentiation
 
 
 **License:**
+
 Atlas of the chromatin landscape in the developing nervous system of Drosophila
 melanogaster © 2022 by Alexander Glahs is licensed under Creative Commons
 Attribution-NonCommercial-ShareAlike 4.0 International. To view a copy of this license,
