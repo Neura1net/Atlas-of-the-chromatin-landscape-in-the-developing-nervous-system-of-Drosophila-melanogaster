@@ -110,7 +110,7 @@ visit https://creativecommons.org/licenses/by-nc-sa/4.0/
   generally.
 
 
-**List of Abbreviations and Acronyms**
+**List of Abbreviations and Acronyms:**
 
 3’UTR 3′ untranslated region 
 
@@ -183,7 +183,9 @@ AS-C achaete-scute complex
 
 log2FC log2 fold change
 
-ATAC-seq Assay for Transposase- Accessible Chromatin using sequencing LSc Lethal of Scute
+ATAC-seq Assay for Transposase- Accessible Chromatin using sequencing 
+
+LSc Lethal of Scute
 
 Awh Arrowhead 
 
@@ -205,7 +207,12 @@ bHLH Basic helix–loop–helix mef2 myocyte enhancer factor-2
 
 BiTS-ChIP batch isolation of tissue-specific chromatin for immunoprecipitation
 
-MEME Multiple Expectation maximizations for Motif Elicitation BMP bone morphogenetic protein miRNA microRNA
+MEME Multiple Expectation maximizations for Motif Elicitation 
+
+BMP bone morphogenetic protein 
+
+miRNA microRNA
+
 bp base pair 
 
 mirr mirror
@@ -262,9 +269,13 @@ CRM Cis-regulatory module
 
 NEE neuroectodermal enhancer
 
-CRM Cis-regulatory module NetA/NetB Netrin-A / Netrin-B
+CRM Cis-regulatory module 
 
-CRN cis-regulatory network NFR nucleosome-free region
+NetA/NetB Netrin-A / Netrin-B
+
+CRN cis-regulatory network 
+
+NFR nucleosome-free region
 
 ct cut 
 
@@ -314,10 +325,12 @@ PET Prickle Espinas Testin
 doc1-3 dorsocross 1-3 
 
 PHM pharingeal musculature
+
 dpERK phosphorylated form of
 MAPK/Erk 
 
 Pins Partner of Inscuteable
+
 dpp decapentaplegic 
 
 piRNA Piwi-interacting RNA
