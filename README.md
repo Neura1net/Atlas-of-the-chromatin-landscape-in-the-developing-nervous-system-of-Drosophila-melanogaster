@@ -17,8 +17,31 @@ All processed data and analysis code for this dissertation have been made public
 
 •	EpicSeg_HMM_dm6_Supplement_Glahs: Hidden Markov Model (HMM) parameters, segmentation results, and state-transition data for the epicSeg chromatin-state analysis.
 
-
 Raw sequencing data (original FASTQ files for all ATAC-seq and ChIP-seq libraries) will be archived on the EDOC-Server at the Humboldt-Universität Library (DOI:XXXXX.XXXX). These raw data are available via the HU Berlin Library’s research data service (EDOC) for any interested reader. This arrangement ensures long-term preservation and accessibility of the raw datasets, in line with institutional research-data policies.
+
+DDC classification 574.3 Developmental Biology
+
+Keywords: 
+Drosophila melanogaster
+Central nervous system development
+Neurogenic tissue specification
+Neuroblast differentiation
+Neuroectoderm (ventral column, intermediate column)
+Stem cells
+Genomic regulatory state
+Histone modifications
+Chromatin accessibility
+Cis-regulatory modules (CRMs)
+Differentially regulated genes (DRGs)
+Spatiotemporal gene regulation
+Differential peak calling
+Differential enrichment analysis
+Machine learning
+Gene regulatory networks
+Sequence motif enrichment
+Tissue-specific gene regulation
+Neurogenesis
+Tissue differentiation
 
 License:
 Atlas of the chromatin landscape in the developing nervous system of Drosophila
