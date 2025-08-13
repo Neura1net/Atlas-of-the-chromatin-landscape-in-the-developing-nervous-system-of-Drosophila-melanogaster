@@ -81,6 +81,32 @@ Attribution-NonCommercial-ShareAlike 4.0 International. To view a copy of this l
 visit https://creativecommons.org/licenses/by-nc-sa/4.0/
 
 
+**Abstract:**
+
+  In this study, I identify novel regulatory nodes and potential signal transduction
+  pathways that govern neurogenic tissue specification and differentiation. The Drosophila
+  melanogaster central nervous system develops from three columns of neuroectodermal
+  cells that give rise to neural stem cells called neuroblasts. I investigated the genomic
+  regulatory state of cells derived from the ventral column (VC) and the intermediate
+  column (IC) of the neurectoderm (NE) as they specify, diversify and differentiate. In this
+  thesis I investigated how cell populations become distinct from one another, and how the
+  genomic regulatory state within these cell populations changes over developmental time.
+  As post-translational histone modification occupancy and chromatin accessibility has
+  been linked to distinct aspects of gene regulation, I assessed their tissue specific
+  genome wide distributions and used them as a proxy to investigate the genomic
+  regulatory state in a developing embryo. Differential peak calling, differential enrichment
+  analysis and machine learning was employed to identify spatiotemporally regulated cis-
+  regulatory modules (CRMs) and differentially regulated genes (DRGs). I could show that
+  I can accurately predict tissue specific CRMs by validating a subset of de novo predicted
+  differentially regulated CRMs with reporter lines. The spatiotemporal regulatory trajectory
+  of differentially regulated elements was used to refine the existing models for the gene
+  regulatory networks that govern neuronal differentiation, to associate distal regulatory
+  elements with core promoters, and to identify enriched sequence motifs within active
+  CRMs. Taken together the datasets and algorithms in this study provide a
+  comprehensive atlas of novel CRMs of the developing nervous system in Drosophila,
+  novel insights into the regulatory nodes and edges during neurogenesis and a valuable
+  resource to refine existing models of neurogenesis specifically and tissue differentiation
+  generally.
 
 
 **List of Abbreviations and Acronyms**
