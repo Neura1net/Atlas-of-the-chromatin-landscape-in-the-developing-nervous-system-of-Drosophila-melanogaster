@@ -1,6 +1,9 @@
 # Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster
 This repository houses all processed data files and the complete analytical codebase utilized for my biology dissertation. It supports the findings presented in "Atlas of the chromatin landscape in the developing nervous system of Drosophila melanogaster" by providing full reproducibility and access to the underlying computational work.
 
+DOI of the original Disseration with the Title "Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster" : DOI:XXXX.XXXX
+DOI of this collection of suplemental data: DOI:XXXX.XXXX
+
 Supplementary Material
 All processed data and analysis code for this dissertation have been made publicly accessible. In particular, a GitHub repository [(Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster/edit/main/README.md)](https://github.com/Neura1net/Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster/edit/main/README.md) contains all scripts and processed datasets generated in this work. This repository replicates the original folder structure and includes the following content:
 
@@ -15,7 +18,7 @@ All processed data and analysis code for this dissertation have been made public
 •	EpicSeg_HMM_dm6_Supplement_Glahs: Hidden Markov Model (HMM) parameters, segmentation results, and state-transition data for the epicSeg chromatin-state analysis.
 
 
-Raw sequencing data (original FASTQ files for all ATAC-seq and ChIP-seq libraries) will be archived on an external hard drive or directly on the EDOC-Server at the Humboldt-Universität Library. These raw data are available via the HU Berlin Library’s research data service (EDOC) for any interested reader. This arrangement ensures long-term preservation and accessibility of the raw datasets, in line with institutional research-data policies.
+Raw sequencing data (original FASTQ files for all ATAC-seq and ChIP-seq libraries) will be archived on the EDOC-Server at the Humboldt-Universität Library (DOI:XXXXX.XXXX). These raw data are available via the HU Berlin Library’s research data service (EDOC) for any interested reader. This arrangement ensures long-term preservation and accessibility of the raw datasets, in line with institutional research-data policies.
 
 License:
 Atlas of the chromatin landscape in the developing nervous system of Drosophila
