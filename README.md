@@ -38,59 +38,90 @@ Data availability & archiving
 ________________________________________
 Repository contents 
 This repository reproduces the original folder layout used during the dissertation work. The top-level folders are listed below exactly as they appear in the repository:
+
 •	BiTS_ATAC_data_dm6_Glahs_Karabacak/
 Results of the BiTS ATAC-seq experiments: peak calls, DESeq2 differential accessibility tables, multiBamCov input/count files and normalized signal tracks (dm6).
+
 •	BiTS_ChIP_Differential_enrichment_analysis_at_TSS_and_Enhancers/
 BiTS ChIP-seq differential enrichment results: DESeq2 outputs, multiBamCov inputs, clustering analyses, RNA-seq integration tables, and the master DRG and enhancer analysis tables. All pairwise comparisons referenced in the dissertation are summarized in Supplementary Figure 1 of the dissertation.
+
 •	BiTS_ChIP_Normalised_Signal_files_dm6_Glahs/
 RPGC-normalized and background-subtracted ChIP-seq signal tracks (bigWig / bedGraph) produced for visualization and quantitative analyses.
+
 •	BiTS_ChIP_TAD_Analysis_Supplement_dm6_Glahs/
 Hi-C / TAD analysis results (domain coordinates, boundary strength metrics and associated supplementary tables/figures) discussed in Chapter 8.8 of the dissertation.
+
 •	EpicSeg_HMM_dm6_Supplement_Glahs/
 EpicSeg (HMM) model parameters, segmentation outputs (state BEDs), emission/transition parameter tables and state-transition diagnostics.
+
 •	Software und Code Repository - R - Analysis/
 Primary R analysis scripts and helper functions used to generate tables, statistical analyses and figures. This folder documents the analysis pipeline and references per-analysis metadata where available.
+
 •	README.md (this file).
 ________________________________________
 File types & conventions
 Files in this repository follow standard genomics and data-science conventions:
+
 •	BED — genomic intervals (peaks, TADs, segmentation states). Coordinates are relative to dm6 (D. melanogaster) unless stated otherwise.
+
 •	bigWig / bedGraph — continuous normalized signal tracks for genome-browser visualization.
+
 •	TSV / CSV — tabular differential results (DESeq2), master tables, summary statistics, integration tables.
+
 •	PDF / PNG — high-resolution figures and diagnostic plots used in the dissertation.
+
 •	R scripts — analysis code (located in Software und Code Repository - R - Analysis/); scripts include inline documentation and references to package requirements where applicable.
 ________________________________________
 Provenance & methods
+
 •	All processed files are mapped to the D. melanogaster dm6 reference assembly. Users should confirm genome-build consistency before integrating these data with external resources.
+
 •	Detailed descriptions of data preprocessing, normalization choices, statistical models (DESeq2 settings, multiple-test adjustments), segmentation parameters, and clustering criteria are provided in the dissertation Methods section.
 ________________________________________
 Reproducibility notes
+
 •	The Software und Code Repository - R - Analysis/ folder contains the R scripts used to reproduce the major tables and figures. Scripts reference the primary inputs and indicate required packages.
+
 •	Exact software versions, parameter choices and preprocessing steps are described in the Methods section of the dissertation; reviewers and users attempting byte-for-byte reproduction should consult those sections and the per-folder metadata.
 ________________________________________
 How to cite
+
 When using these data, code or figures please cite both the dissertation and this repository:
+
 Dissertation (primary citation):
+
 Glahs, A. (2022). Atlas of the chromatin landscape in the developing nervous system of Drosophila melanogaster. Doctoral dissertation, Humboldt-Universität zu Berlin. DOI: DOI:XXXX.XXXX.
+
 Supplemental collection (this repository):
+
 Glahs, A. (2022). Supplemental data and analysis code for “Atlas of the chromatin landscape in the developing nervous system of Drosophila melanogaster.” GitHub repository, Neura1net. https://github.com/Neura1net/Atlas-of-the-chromatin-landscape-in-the-developing-nervous-system-of-Drosophila-melanogaster. (GitHub)
 ________________________________________
 License
+
 © 2022 Alexander Glahs.
+
 This work is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0). To view the full license terms see: https://creativecommons.org/licenses/by-nc-sa/4.0/.
 ________________________________________
 Author, classification & contact
+
 •	Author: Alexander Glahs
+
 •	Email: aglahs@yahoo.de
+
 •	DDC classification: 574.3 — Developmental Biology
+
 For questions regarding data provenance, metadata, or access to the raw sequencing files archived in EDOC, please contact the author.
 ________________________________________
 Keywords
+
 Drosophila melanogaster; central nervous system development; neurogenic tissue specification; neuroblast differentiation; neuroectoderm; stem cells; genomic regulatory state; histone modifications; chromatin accessibility; cis-regulatory modules (CRMs); differentially regulated genes (DRGs); spatiotemporal gene regulation; differential peak calling; differential enrichment analysis; machine learning; gene regulatory networks; motif enrichment; tissue-specific regulation; neurogenesis; tissue differentiation.
 ________________________________________
 Abstract
-In this study, I identify novel regulatory nodes and potential signal transduction pathways that govern neurogenic tissue specification and differentiation. The Drosophila melanogaster central nervous system develops from three columns of neuroectodermal cells that give rise to neural stem cells called neuroblasts. I investigated the genomic regulatory state of cells derived from the ventral column (VC) and the intermediate column (IC) of the neurectoderm (NE) as they specify, diversify and differentiate. In this thesis I investigated how cell populations become distinct from one another, and how the genomic regulatory state within these cell populations changes over developmental time. As post-translational histone modification occupancy and chromatin accessibility has been linked to distinct aspects of gene regulation, I assessed their tissue specific genome wide distributions and used them as a proxy to investigate the genomic regulatory state in a developing embryo. Differential peak calling, differential enrichment analysis and machine learning was employed to identify spatiotemporally regulated cis- regulatory modules (CRMs) and differentially regulated genes (DRGs). I could show that I can accurately predict tissue specific CRMs by validating a subset of de novo predicted differentially regulated CRMs with reporter lines. The spatiotemporal regulatory trajectory of differentially regulated elements was used to refine the existing models for the gene regulatory networks that govern neuronal differentiation, to associate distal regulatory elements with core promoters, and to identify enriched sequence motifs within active CRMs. Taken together the datasets and algorithms in this study provide a comprehensive atlas of novel CRMs of the developing nervous system in Drosophila, novel insights into the regulatory nodes and edges during neurogenesis and a valuable resource to refine existing models of neurogenesis specifically and tissue differentiation generally.________________________________________
+
+In this study, I identify novel regulatory nodes and potential signal transduction pathways that govern neurogenic tissue specification and differentiation. The Drosophila melanogaster central nervous system develops from three columns of neuroectodermal cells that give rise to neural stem cells called neuroblasts. I investigated the genomic regulatory state of cells derived from the ventral column (VC) and the intermediate column (IC) of the neurectoderm (NE) as they specify, diversify and differentiate. In this thesis I investigated how cell populations become distinct from one another, and how the genomic regulatory state within these cell populations changes over developmental time. As post-translational histone modification occupancy and chromatin accessibility has been linked to distinct aspects of gene regulation, I assessed their tissue specific genome wide distributions and used them as a proxy to investigate the genomic regulatory state in a developing embryo. Differential peak calling, differential enrichment analysis and machine learning was employed to identify spatiotemporally regulated cis- regulatory modules (CRMs) and differentially regulated genes (DRGs). I could show that I can accurately predict tissue specific CRMs by validating a subset of de novo predicted differentially regulated CRMs with reporter lines. The spatiotemporal regulatory trajectory of differentially regulated elements was used to refine the existing models for the gene regulatory networks that govern neuronal differentiation, to associate distal regulatory elements with core promoters, and to identify enriched sequence motifs within active CRMs. Taken together the datasets and algorithms in this study provide a comprehensive atlas of novel CRMs of the developing nervous system in Drosophila, novel insights into the regulatory nodes and edges during neurogenesis and a valuable resource to refine existing models of neurogenesis specifically and tissue differentiation generally.
+________________________________________
 Acknowledgements
+
 The data, analyses and curation presented in this repository were produced as part of the doctoral research conducted at Humboldt-Universität zu Berlin. Raw sequencing data will be archived in the EMBL/EBI ArrayExpress Repository to guarantee long-term preservation and institutional access. (https://www.ebi.ac.uk/biostudies/arrayexpress)
 
 ________________________________________
