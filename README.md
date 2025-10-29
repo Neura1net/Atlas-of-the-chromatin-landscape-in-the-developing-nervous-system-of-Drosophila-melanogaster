@@ -30,7 +30,7 @@ Atlas of the chromatin landscape in the developing nervous system of Drosophila 
 Materials provided here enable reproduction of the computational results, figures and tables presented in the dissertation and provide a comprehensive resource for comparative and follow-up studies of chromatin regulation during neurogenesis.
 ________________________________________
 Persistent identifiers
-•	Dissertation DOI: DOI:XXXX.XXXX
+•	Dissertation DOI: DOI:[XXXX.XXXX](https://doi.org/10.18452/34848)
 •	DOI for this supplemental data collection: DOI:XXXX.XXXX
 ________________________________________
 Data availability & archiving
