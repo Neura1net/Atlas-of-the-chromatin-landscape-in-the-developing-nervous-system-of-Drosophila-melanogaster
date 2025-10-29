@@ -31,7 +31,7 @@ Materials provided here enable reproduction of the computational results, figure
 ________________________________________
 Persistent identifiers
 •	Dissertation DOI: DOI:[XXXX.XXXX](https://doi.org/10.18452/34848)
-•	DOI for this supplemental data collection: DOI:XXXX.XXXX
+•	DOI for this supplemental data collection: [DOI:XXXX.XXXX](https://doi.org/10.18452/34829)
 ________________________________________
 Data availability & archiving
 •	Processed data and analysis code are hosted in this GitHub repository. (GitHub)
